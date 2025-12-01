@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Monitor de Treinos</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <style>
+    :root {
+      --bg: #0f172a;
+      --bg-soft: #111827;
+      --card: #020617;
+      --accent: #22c55e;
+      --accent-soft: rgba(34, 197, 94, 0.15);
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --border: #1f2933;
+      --danger: #ef4444;
+      --radius-lg: 16px;
+      --radius-xl: 24px;
+      --shadow-soft: 0 18px 40px rgba(0, 0, 0, 0.45);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body {
+      background: radial-gradient(circle at top, #1f2937 0, #020617 55%);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: stretch;
+      justify-content: center;
+      padding: 10px;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 960px;
+      background: linear-gradient(135deg, var(--bg), #020617);
+      border-radius: 24px;
+      box-shadow: var(--shadow-soft);
+      border: 1px solid rgba(148, 163, 184, 0.15);
+      padding: 14px 14px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    header {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .title {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .title h1 {
+      font-size: 1.3rem;
+      letter-spacing: 0.02em;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .title h1 span.icon {
+      font-size: 1.2rem;
+    }
+
+    .subtitle {
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .date-controls {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      align-items: stretch;
+      width: 100%;
+      max-width: 100%;
+    }
+
+    .date-display {
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      background: rgba(15, 23, 42, 0.7);
+      font-size: 0.8rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      justify-content: space-between;
+    }
+
+    .date-display strong {
+      font-weight: 600;
+    }
+
+    .date-display span.badge {
+      padding: 2px 8px;
+      font-size: 0.75rem;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      white-space: nowrap;
+    }
+
+    .nav-buttons {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      width: 100%;
+    }
+
+    .nav-buttons button,
+    .nav-buttons input[type="date"] {
+      flex: 1;
+    }
+
+    button {
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      padding: 8px 10px;
+      font-size: 0.8rem;
+      background: rgba(15, 23, 42, 0.9);
+      color: var(--text);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      transition: all 0.15s ease;
+      min-height: 36px;
+    }
+
+    button:hover {
+      background: rgba(31, 41, 55, 0.95);
+      border-color: rgba(148, 163, 184, 0.6);
+      transform: translateY(-1px);
+    }
+
+    button.primary {
+      background: linear-gradient(135deg, var(--accent), #16a34a);
+      border-color: transparent;
+      color: #022c22;
+      font-weight: 600;
+      box-shadow: 0 8px 20px rgba(34, 197, 94, 0.4);
+    }
+
+    button.primary:hover {
+      filter: brightness(1.05);
+      transform: translateY(-1px) scale(1.01);
+    }
+
+    button.icon-only {
+      max-width: 42px;
+      flex: 0 0 42px;
+      padding-inline: 0;
+    }
+
+    input[type="date"] {
+      background: rgba(15, 23, 42, 0.9);
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.55);
+      color: var(--text);
+      padding: 7px 10px;
+      font-size: 0.8rem;
+      outline: none;
+      min-height: 36px;
+    }
+
+    input[type="date"]::-webkit-calendar-picker-indicator {
+      filter: invert(1);
+    }
+
+    .workout-banner {
+      border-radius: var(--radius-xl);
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      background: radial-gradient(circle at top left, rgba(34, 197, 94, 0.2), transparent 55%),
+                  radial-gradient(circle at top right, rgba(59, 130, 246, 0.2), transparent 55%),
+                  rgba(15, 23, 42, 0.9);
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .workout-info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .workout-name {
+      font-size: 0.95rem;
+      font-weight: 600;
+    }
+
+    .workout-muscles {
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .workout-tag {
+      font-size: 0.73rem;
+      padding: 3px 9px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px dashed rgba(148, 163, 184, 0.6);
+      color: var(--muted);
+      align-self: flex-start;
+    }
+
+    .settings-row {
+      margin-top: 2px;
+      padding: 7px 10px;
+      border-radius: 14px;
+      border: 1px dashed rgba(148, 163, 184, 0.4);
+      background: rgba(15, 23, 42, 0.8);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    .settings-label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .settings-controls {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      width: 100%;
+    }
+
+    .settings-controls input[type="date"] {
+      flex: 1.1;
+      font-size: 0.78rem;
+      padding: 6px 9px;
+    }
+
+    .settings-controls button {
+      flex: 1;
+      font-size: 0.75rem;
+      padding-inline: 8px;
+    }
+
+    main {
+      flex: 1;
+      overflow: auto;
+      padding-right: 2px;
+      margin-right: -2px;
+    }
+
+    .exercise-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 6px;
+    }
+
+    .exercise-card {
+      background: radial-gradient(circle at top, rgba(15, 118, 110, 0.35), transparent 60%),
+                  var(--card);
+      border-radius: var(--radius-lg);
+      border: 1px solid rgba(30, 64, 175, 0.6);
+      padding: 10px 11px;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
+
+    .exercise-header {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .exercise-title {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .exercise-title-header {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .exercise-index {
+      font-weight: 600;
+    }
+
+    .exercise-label {
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    .exercise-name-input {
+      background: rgba(15, 23, 42, 0.9);
+      border-radius: 10px;
+      border: 1px solid rgba(148, 163, 184, 0.6);
+      padding: 5px 8px;
+      font-size: 0.8rem;
+      color: var(--text);
+      outline: none;
+      width: 100%;
+    }
+
+    .exercise-name-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.3);
+    }
+
+    .fields {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      flex: 1;
+      min-width: 30%;
+    }
+
+    .field label {
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    .field input {
+      background: rgba(15, 23, 42, 0.95);
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.6);
+      padding: 6px 10px;
+      color: var(--text);
+      font-size: 0.85rem;
+      outline: none;
+      min-height: 34px;
+    }
+
+    .field input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.4);
+    }
+
+    footer {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.72rem;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .footer-left {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .footer-left button {
+      font-size: 0.75rem;
+      padding-inline: 12px;
+    }
+
+    .status {
+      min-height: 1.1em;
+    }
+
+    .status.ok {
+      color: var(--accent);
+    }
+
+    .status.warn {
+      color: var(--danger);
+    }
+
+    .hint {
+      text-align: right;
+      flex: 1;
+    }
+
+    .hint strong {
+      color: var(--accent);
+    }
+
+    @media (min-width: 720px) {
+      body {
+        padding: 16px;
+      }
+
+      .app {
+        padding: 20px 20px 24px;
+        border-radius: 28px;
+      }
+
+      .header-top {
+        flex-direction: row;
+        align-items: center;
+      }
+
+      .date-controls {
+        width: auto;
+        max-width: 370px;
+      }
+
+      .exercise-card {
+        grid-template-columns: minmax(0, 1.5fr) minmax(0, 2fr);
+      }
+
+      .fields {
+        justify-content: flex-end;
+      }
+
+      .field {
+        flex: 0 0 100px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div class="header-top">
+        <div class="title">
+          <h1><span class="icon">🏋️‍♀️</span> Monitor de Treinos</h1>
+          <p class="subtitle">Registre carga, séries e repetições dos treinos A, B e C com rodízio diário.</p>
+        </div>
+        <div class="date-controls">
+          <div class="date-display">
+            <span>Dia:</span>
+            <strong id="dateLabel"></strong>
+            <span class="badge" id="workoutBadge">Treino A</span>
+          </div>
+          <div class="nav-buttons">
+            <button class="icon-only" id="prevDayBtn" title="Dia anterior">←</button>
+            <button class="icon-only" id="nextDayBtn" title="Próximo dia">→</button>
+            <button id="todayBtn">Hoje</button>
+            <input type="date" id="datePicker">
+          </div>
+        </div>
+      </div>
+
+      <div class="workout-banner">
+        <div class="workout-info">
+          <div class="workout-name" id="workoutName"></div>
+          <div class="workout-muscles" id="workoutMuscles"></div>
+        </div>
+        <div class="workout-tag">
+          Rodízio automático: A → B → C → A ...
+        </div>
+      </div>
+
+      <div class="settings-row">
+        <div class="settings-label">
+          <span>⚙️ Início do rodízio (Treino A):</span>
+        </div>
+        <div class="settings-controls">
+          <input type="date" id="baseDatePicker">
+          <button id="baseDateTodayBtn">Usar hoje como início</button>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <div class="exercise-list" id="exerciseList">
+        <!-- Exercícios via JS -->
+      </div>
+    </main>
+
+    <footer>
+      <div class="footer-left">
+        <div class="status" id="statusMessage"></div>
+        <button id="saveDayBtn" class="primary">Salvar treino do dia</button>
+      </div>
+      <div class="hint">
+        Dados e configurações são salvos automaticamente (<strong>localStorage</strong>).
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    // ---------- Utilidades de datas ----------
+    function stripTime(date) {
+      return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    }
+
+    function formatForStorage(date) {
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, "0");
+      const d = String(date.getDate()).padStart(2, "0");
+      return `${y}-${m}-${d}`;
+    }
+
+    function formatForDisplay(date) {
+      const d = String(date.getDate()).padStart(2, "0");
+      const m = String(date.getMonth() + 1).padStart(2, "0");
+      const y = date.getFullYear();
+      return `${d}/${m}/${y}`;
+    }
+
+    function loadRotationBaseDate() {
+      try {
+        const raw = localStorage.getItem("gymTrackerRotationBase");
+        if (raw) {
+          const [y, m, d] = raw.split("-");
+          return stripTime(new Date(Number(y), Number(m) - 1, Number(d)));
+        }
+      } catch (e) {
+        console.error("Erro ao ler data base:", e);
+      }
+      return stripTime(new Date(2025, 0, 1));
+    }
+
+    function saveRotationBaseDate(date) {
+      try {
+        localStorage.setItem("gymTrackerRotationBase", formatForStorage(date));
+      } catch (e) {
+        console.error("Erro ao salvar data base:", e);
+      }
+    }
+
+    // ---------- Treinos padrão ----------
+    const defaultWorkouts = {
+      A: {
+        codigo: "A",
+        nome: "Treino A – Costas e Bíceps",
+        musculos: "Foco em dorsais e bíceps.",
+        exercicios: [
+          "Remada curvada barra",
+          "Barra fixa - graviton",
+          "Puxada alta supinada",
+          "Pull down barra",
+          "Crucifixo invertido polia",
+          "Bíceps polia barra",
+          "Bíceps inverso barra"
+        ]
+      },
+      B: {
+        codigo: "B",
+        nome: "Treino B – Peito, Ombro e Tríceps",
+        musculos: "Foco em peitoral, deltoides e tríceps.",
+        exercicios: [
+          "Supino inclinado halteres",
+          "Supino reto barra",
+          "Cross over polia alta",
+          "Desenvolvimento Arnold",
+          "Elevação frontal polia corda",
+          "Tríceps polia barra",
+          "Tríceps testa barra"
+        ]
+      },
+      C: {
+        codigo: "C",
+        nome: "Treino C – Pernas",
+        musculos: "Foco em quadríceps, posteriores e panturrilhas.",
+        exercicios: [
+          "Agachamento livre barra",
+          "Leg press 45",
+          "Stiff halteres",
+          "Cadeira flexora",
+          "Panturrilha sentado"
+        ]
+      }
+    };
+
+    function loadWorkouts() {
+      try {
+        const raw = localStorage.getItem("gymTrackerWorkouts");
+        if (!raw) {
+          return JSON.parse(JSON.stringify(defaultWorkouts));
+        }
+        const saved = JSON.parse(raw);
+        const result = JSON.parse(JSON.stringify(defaultWorkouts));
+        ["A", "B", "C"].forEach(code => {
+          if (saved[code]) {
+            if (saved[code].nome) result[code].nome = saved[code].nome;
+            if (saved[code].musculos) result[code].musculos = saved[code].musculos;
+            if (Array.isArray(saved[code].exercicios)) {
+              result[code].exercicios = saved[code].exercicios;
+            }
+          }
+        });
+        return result;
+      } catch (e) {
+        console.error("Erro ao ler treinos:", e);
+        return JSON.parse(JSON.stringify(defaultWorkouts));
+      }
+    }
+
+    function saveWorkouts(workouts) {
+      try {
+        localStorage.setItem("gymTrackerWorkouts", JSON.stringify(workouts));
+      } catch (e) {
+        console.error("Erro ao salvar treinos:", e);
+      }
+    }
+
+    let baseRotationDate = loadRotationBaseDate();
+    let workouts = loadWorkouts();
+
+    // ---------- Elementos da UI ----------
+    const dateLabel = document.getElementById("dateLabel");
+    const workoutBadge = document.getElementById("workoutBadge");
+    const workoutName = document.getElementById("workoutName");
+    const workoutMuscles = document.getElementById("workoutMuscles");
+    const exerciseList = document.getElementById("exerciseList");
+    const statusMessage = document.getElementById("statusMessage");
+    const prevDayBtn = document.getElementById("prevDayBtn");
+    const nextDayBtn = document.getElementById("nextDayBtn");
+    const todayBtn = document.getElementById("todayBtn");
+    const datePicker = document.getElementById("datePicker");
+    const baseDatePicker = document.getElementById("baseDatePicker");
+    const baseDateTodayBtn = document.getElementById("baseDateTodayBtn");
+    const saveDayBtn = document.getElementById("saveDayBtn");
+
+    let currentDate = stripTime(new Date());
+
+    // ---------- Lógica do rodízio ----------
+    function getWorkoutCodeForDate(date) {
+      const base = stripTime(baseRotationDate);
+      const diffMs = stripTime(date) - base;
+      const dayIndex = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+      const idx = ((dayIndex % 3) + 3) % 3;
+      return ["A", "B", "C"][idx];
+    }
+
+    // ---------- Storage dos dados ----------
+    function loadStorage() {
+      try {
+        const raw = localStorage.getItem("gymTrackerData");
+        return raw ? JSON.parse(raw) : {};
+      } catch (e) {
+        console.error("Erro ao ler storage:", e);
+        return {};
+      }
+    }
+
+    function saveStorage(data) {
+      try {
+        localStorage.setItem("gymTrackerData", JSON.stringify(data));
+      } catch (e) {
+        console.error("Erro ao salvar storage:", e);
+      }
+    }
+
+    // ---------- Renderização ----------
+    function render() {
+      const dayKey = formatForStorage(currentDate);
+      const workoutCode = getWorkoutCodeForDate(currentDate);
+      const workout = workouts[workoutCode];
+
+      dateLabel.textContent = formatForDisplay(currentDate);
+      workoutBadge.textContent = `Treino ${workoutCode}`;
+      workoutName.textContent = workout.nome;
+      workoutMuscles.textContent = workout.musculos;
+      datePicker.value = dayKey;
+      baseDatePicker.value = formatForStorage(baseRotationDate);
+
+      const db = loadStorage();
+      const dayData = db[dayKey] || { treino: workoutCode, exercicios: [] };
+
+      exerciseList.innerHTML = "";
+
+      workout.exercicios.forEach((nome, index) => {
+        const saved = dayData.exercicios && dayData.exercicios[index] ? dayData.exercicios[index] : {};
+        const carga = saved.carga ?? "";
+        const series = saved.series ?? "";
+        const reps = saved.reps ?? "";
+
+        const card = document.createElement("div");
+        card.className = "exercise-card";
+
+        card.innerHTML = `
+          <div class="exercise-header">
+            <div class="exercise-title">
+              <div class="exercise-title-header">
+                <span class="exercise-index">Exercício ${index + 1}</span>
+              </div>
+              <input
+                type="text"
+                class="exercise-name-input"
+                data-index="${index}"
+                value="${nome}"
+                title="Clique para editar o nome deste exercício para o Treino ${workoutCode}"
+              />
+            </div>
+            <div class="exercise-label">Preencha a carga, número de séries e repetições.</div>
+          </div>
+          <div class="fields">
+            <div class="field">
+              <label for="carga-${index}">Carga (kg)</label>
+              <input
+                type="number"
+                step="0.5"
+                id="carga-${index}"
+                data-field="carga"
+                data-index="${index}"
+                value="${carga}"
+                placeholder="Ex: 20"
+              />
+            </div>
+            <div class="field">
+              <label for="series-${index}">Séries</label>
+              <input
+                type="number"
+                id="series-${index}"
+                data-field="series"
+                data-index="${index}"
+                value="${series}"
+                placeholder="Ex: 3"
+              />
+            </div>
+            <div class="field">
+              <label for="reps-${index}">Repetições</label>
+              <input
+                type="number"
+                id="reps-${index}"
+                data-field="reps"
+                data-index="${index}"
+                value="${reps}"
+                placeholder="Ex: 12"
+              />
+            </div>
+          </div>
+        `;
+
+        exerciseList.appendChild(card);
+      });
+
+      clearStatus();
+    }
+
+    // ---------- Salvar dados do dia ----------
+    function saveCurrentDay(showMsg = true) {
+      const dayKey = formatForStorage(currentDate);
+      const workoutCode = getWorkoutCodeForDate(currentDate);
+      const workout = workouts[workoutCode];
+
+      const db = loadStorage();
+      const exerciciosData = [];
+
+      workout.exercicios.forEach((_, index) => {
+        const card = document.querySelector(`.exercise-card:nth-child(${index + 1})`);
+        if (!card) return;
+
+        const nameInput = card.querySelector(".exercise-name-input");
+        const cargaInput = card.querySelector('input[data-field="carga"]');
+        const seriesInput = card.querySelector('input[data-field="series"]');
+        const repsInput = card.querySelector('input[data-field="reps"]');
+
+        const nome = nameInput ? nameInput.value : workout.exercicios[index];
+
+        exerciciosData.push({
+          nome,
+          carga: cargaInput ? cargaInput.value : "",
+          series: seriesInput ? seriesInput.value : "",
+          reps: repsInput ? repsInput.value : ""
+        });
+      });
+
+      db[dayKey] = {
+        treino: workoutCode,
+        exercicios: exerciciosData
+      };
+
+      saveStorage(db);
+      if (showMsg) showStatus("Treino do dia salvo.", "ok");
+    }
+
+    // ---------- Status ----------
+    let statusTimeout = null;
+
+    function showStatus(text, type = "ok") {
+      statusMessage.textContent = text;
+      statusMessage.classList.remove("ok", "warn");
+      statusMessage.classList.add(type);
+
+      if (statusTimeout) clearTimeout(statusTimeout);
+      statusTimeout = setTimeout(() => {
+        clearStatus();
+      }, 2000);
+    }
+
+    function clearStatus() {
+      statusMessage.textContent = "";
+      statusMessage.classList.remove("ok", "warn");
+    }
+
+    // ---------- Navegação de datas ----------
+    prevDayBtn.addEventListener("click", () => {
+      currentDate.setDate(currentDate.getDate() - 1);
+      currentDate = stripTime(currentDate);
+      render();
+    });
+
+    nextDayBtn.addEventListener("click", () => {
+      currentDate.setDate(currentDate.getDate() + 1);
+      currentDate = stripTime(currentDate);
+      render();
+    });
+
+    todayBtn.addEventListener("click", () => {
+      currentDate = stripTime(new Date());
+      render();
+    });
+
+    datePicker.addEventListener("change", (e) => {
+      if (!e.target.value) return;
+      const [y, m, d] = e.target.value.split("-");
+      currentDate = stripTime(new Date(Number(y), Number(m) - 1, Number(d)));
+      render();
+    });
+
+    // ---------- Início do rodízio ----------
+    baseDatePicker.addEventListener("change", (e) => {
+      if (!e.target.value) return;
+      const [y, m, d] = e.target.value.split("-");
+      baseRotationDate = stripTime(new Date(Number(y), Number(m) - 1, Number(d)));
+      saveRotationBaseDate(baseRotationDate);
+      render();
+      showStatus("Início do rodízio atualizado.", "ok");
+    });
+
+    baseDateTodayBtn.addEventListener("click", () => {
+      baseRotationDate = stripTime(new Date());
+      saveRotationBaseDate(baseRotationDate);
+      baseDatePicker.value = formatForStorage(baseRotationDate);
+      render();
+      showStatus("Hoje definido como início do rodízio.", "ok");
+    });
+
+    // ---------- Botão “Salvar treino do dia” ----------
+    saveDayBtn.addEventListener("click", () => {
+      saveCurrentDay(true);
+    });
+
+    // ---------- Auto-salvar ----------
+    document.addEventListener("input", (e) => {
+      if (e.target.matches(".exercise-name-input")) {
+        const index = Number(e.target.dataset.index);
+        const workoutCode = getWorkoutCodeForDate(currentDate);
+        workouts[workoutCode].exercicios[index] =
+          e.target.value || defaultWorkouts[workoutCode].exercicios[index];
+        saveWorkouts(workouts);
+        saveCurrentDay(false);
+        showStatus("Nome do exercício salvo.", "ok");
+        return;
+      }
+
+      if (e.target.matches(".exercise-card input[data-field]")) {
+        saveCurrentDay(false);
+      }
+    });
+
+    // ---------- Inicialização ----------
+    baseDatePicker.value = formatForStorage(baseRotationDate);
+    render();
+  </script>
+</body>
+</html>
